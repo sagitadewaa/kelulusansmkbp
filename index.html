@@ -111,7 +111,7 @@ input {
 const API_URL = "https://script.google.com/macros/s/XXXX/exec";
 
 // ⏰ SET TANGGAL
-const target = new Date("2026-05-04T19:00:00+08:00").getTime();
+const target = new Date("2026-05-01T19:00:00+08:00").getTime();
 
 const countdownEl = document.getElementById("countdown");
 const searchBox = document.getElementById("searchBox");
@@ -133,7 +133,7 @@ setInterval(() => {
   const menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
   const detik = Math.floor((selisih % (1000 * 60)) / 1000);
 
-  countdownEl.innerHTML = `⏳ ${jam}j ${menit}m ${detik}d`;
+  countdownEl.innerHTML = `⏳ ${jam} Jam : ${menit} Menit : ${detik}d`;
 }, 1000);
 
 // 🔍 AUTO SEARCH
