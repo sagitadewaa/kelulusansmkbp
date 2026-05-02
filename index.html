@@ -104,14 +104,8 @@ input {
 }
 
 .suggestions-list {
-  position: absolute;
-  width: 100%;
-  background: white;
-  border: 1px solid #ccc;
-  border-top: none;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 999;
+  box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  border-radius: 0 0 8px 8px;
 }
 
 .suggestions-list div {
@@ -296,6 +290,10 @@ document.getElementById("nama").addEventListener("keyup", function() {
   if (!sudahDibuka) {
     return;
   }
+  if (semuaData.length === 0) {
+    box.innerHTML = "<div>Memuat data...</div>";
+    return;
+   }
 
   const value = this.value.toLowerCase();
   const box = document.getElementById("suggestions");
@@ -366,6 +364,7 @@ window.addEventListener("load", () => {
     .then(res => res.json())
     .then(data => {
       semuaData = data;
+      console.log("Data loaded:", semuaData.length);
     });
 });
 </script>
