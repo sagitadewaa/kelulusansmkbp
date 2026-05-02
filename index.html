@@ -8,20 +8,85 @@
 <!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  background: linear-gradient(135deg, #003366, #0059b3);
   margin: 0;
   padding: 20px;
+}
+
+/* COUNTDOWN BOX */
+.countdown-box {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+
+.time {
+  background: #003366;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  width: 22%;
+}
+
+.time span {
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+.label {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* EFEK KEDIP */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .container {
   max-width: 500px;
   margin: auto;
   background: white;
-  padding: 25px;
   border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* HEADER */
+.header {
+  background: #003366;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.header img {
+  width: 70px;
+  margin-bottom: 10px;
+}
+
+.header h2 {
+  margin: 5px 0;
+  font-size: 18px;
+}
+
+.header p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* CONTENT */
+.content {
+  padding: 20px;
   text-align: center;
 }
 
@@ -30,37 +95,96 @@ input {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
+/* AUTOCOMPLETE FIX */
 .suggestions {
-  text-align: left;
+  position: relative;
+}
+
+.suggestions-list {
+  position: absolute;
+  width: 100%;
+  background: white;
   border: 1px solid #ccc;
   border-top: none;
   max-height: 150px;
   overflow-y: auto;
+  z-index: 999;
 }
 
-.suggestions div {
+.suggestions-list div {
   padding: 10px;
   cursor: pointer;
 }
 
-.suggestions div:hover {
+.suggestions-list div:hover {
   background: #f1f1f1;
 }
 
+/* RESULT */
 .result {
   margin-top: 20px;
   padding: 15px;
   border-radius: 10px;
 }
 
-.lulus { background: #d4edda; }
-.tidak { background: #f8d7da; }
+.lulus {
+  background: #d4edda;
+  color: #155724;
+}
+
+.tidak {
+  background: #f8d7da;
+  color: #721c24;
+}
 
 .animasi {
   font-size: 20px;
   margin-top: 10px;
+  font-weight: bold;
+}
+
+/* COUNTDOWN */
+#countdown {
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.countdown-simple {
+  margin: 10px 0 15px;
+  font-size: 14px;
+  color: #003366;
+}
+
+#timeText {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 5px;
+  animation: blinkSoft 1.2s infinite;
+}
+
+/* kedip halus */
+@keyframes blinkSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.progress-container {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+#progressBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #003366, #0059b3);
+  transition: width 1s linear;
 }
 </style>
 </head>
@@ -68,13 +192,32 @@ input {
 <body>
 
 <div class="container">
-  <h2>🎓 Pengumuman Kelulusan</h2>
-  <div id="countdown"></div>
 
-  <input type="text" id="nama" placeholder="Ketik nama Anda..." autocomplete="off">
-  <div id="suggestions" class="suggestions"></div>
+  <!-- HEADER SEKOLAH -->
+  <div class="header">
+    <img src="https://i.ibb.co.com/sdV75wcH/Logo.png">
+    <h2>SMK CONTOH INDONESIA</h2>
+    <p>Pengumuman Kelulusan Tahun 2026</p>
+  </div>
 
-  <div id="result"></div>
+  <div class="content">
+    <div id="countdown" class="countdown-simple">
+        ⏳ Dibuka dalam:
+        <div id="timeText"></div>
+    </div>
+  </div>
+  <div class="progress-container">
+  <div id="progressBar"></div>
+</div>
+
+    <div id="searchSection" style="display:none;">
+        <div class="suggestions">
+            <input type="text" id="nama" placeholder="Masukkan Nama Anda..." autocomplete="off">
+            <div id="suggestions" class="suggestions-list"></div>
+        </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -84,25 +227,28 @@ let semuaData = [];
 
 // ⏰ COUNTDOWN
 const target = new Date("2026-05-01T19:00:00+08:00").getTime();
+
 setInterval(() => {
   const now = new Date().getTime();
   const selisih = target - now;
 
   if (selisih <= 0) {
-    document.getElementById("countdown").innerHTML = "🔓 Dibuka";
+    document.getElementById("countdown").innerHTML = "🔓 Pengumuman Dibuka";
     loadData();
     return;
   }
 
-  const jam = Math.floor(selisih / 3600000);
-  const menit = Math.floor((selisih % 3600000) / 60000);
-  const detik = Math.floor((selisih % 60000) / 1000);
+  const hari = Math.floor(selisih / (1000 * 60 * 60 * 24));
+  const jam = Math.floor((selisih % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
+  const detik = Math.floor((selisih % (1000 * 60)) / 1000);
 
-  document.getElementById("countdown").innerHTML =
-    `⏳ ${jam}j ${menit}m ${detik}d`;
+  document.getElementById("timeText").innerText =
+    `${hari} Hari ${jam} Jam ${menit} Menit ${detik} Detik`;
+
 }, 1000);
 
-// 🔄 LOAD DATA SEKALI
+// 🔄 LOAD DATA
 function loadData() {
   if (semuaData.length > 0) return;
 
@@ -148,7 +294,7 @@ function pilihNama(nama) {
   document.getElementById("suggestions").innerHTML = "";
 
   Swal.fire({
-    title: 'Mencari...',
+    title: 'Memproses...',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
   });
@@ -160,9 +306,10 @@ function pilihNama(nama) {
   }, 500);
 }
 
-// 🎨 HASIL
+// 🎨 HASIL + FIREWORKS
 function tampilkan(d) {
   let kelas = d.status === "LULUS" ? "lulus" : "tidak";
+
   let animasi = d.status === "LULUS"
     ? "🎉 Selamat Anda LULUS!"
     : "Tetap semangat 💪";
@@ -175,6 +322,15 @@ function tampilkan(d) {
       <div class="animasi">${animasi}</div>
     </div>
   `;
+
+  // 🎆 FIREWORKS JIKA LULUS
+  if (d.status === "LULUS") {
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.6 }
+    });
+  }
 }
 </script>
 
