@@ -213,6 +213,7 @@ input {
     <div id="searchSection" style="display:none;">
         <div class="suggestions">
             <input type="text" id="nama" placeholder="Masukkan Nama Anda..." autocomplete="off">
+            <br>
             <div id="suggestions" class="suggestions-list"></div>
         </div>
     </div>
@@ -228,16 +229,38 @@ let semuaData = [];
 // ⏰ COUNTDOWN
 const target = new Date("2026-05-01T19:00:00+08:00").getTime();
 
+// ⏪ ambil waktu mulai (saat halaman dibuka)
+const start = new Date().getTime();
+
+let sudahDibuka = false;
+
 setInterval(() => {
   const now = new Date().getTime();
   const selisih = target - now;
 
+  // ⏳ HITUNG PROGRESS
+  const totalDurasi = target - start;
+  const berjalan = now - start;
+  let persen = (berjalan / totalDurasi) * 100;
+  if (persen > 100) persen = 100;
+
+  document.getElementById("progressBar").style.width = persen + "%";
+
+  // 🔓 JIKA SUDAH WAKTU
   if (selisih <= 0) {
     document.getElementById("countdown").innerHTML = "🔓 Pengumuman Dibuka";
-    loadData();
+
+    // tampilkan search (hanya sekali)
+    if (!sudahDibuka) {
+      document.getElementById("searchSection").style.display = "block";
+      loadData();
+      sudahDibuka = true;
+    }
+
     return;
   }
 
+  // ⏱ HITUNG WAKTU
   const hari = Math.floor(selisih / (1000 * 60 * 60 * 24));
   const jam = Math.floor((selisih % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
