@@ -291,6 +291,12 @@ function loadData() {
 
 // 🔍 AUTOCOMPLETE
 document.getElementById("nama").addEventListener("keyup", function() {
+
+  // 🚫 blok sebelum waktu dibuka
+  if (!sudahDibuka) {
+    return;
+  }
+
   const value = this.value.toLowerCase();
   const box = document.getElementById("suggestions");
 
@@ -355,6 +361,13 @@ function tampilkan(d) {
     });
   }
 }
+window.addEventListener("load", () => {
+  fetch(API_URL + "?mode=all")
+    .then(res => res.json())
+    .then(data => {
+      semuaData = data;
+    });
+});
 </script>
 
 </body>
