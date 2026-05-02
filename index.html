@@ -180,6 +180,23 @@ input {
   background: linear-gradient(90deg, #003366, #0059b3);
   transition: width 1s linear;
 }
+.lulus-text {
+  font-size: 26px;
+  font-weight: bold;
+  color: #dd2222;
+  animation: scaleUp 0.6s ease, glow 1s infinite alternate;
+  margin-top: 10px;
+}
+
+@keyframes scaleUp {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 5px #28a745; }
+  to { text-shadow: 0 0 20px #28a745; }
+}
 </style>
 </head>
 
@@ -190,7 +207,7 @@ input {
   <!-- HEADER SEKOLAH -->
   <div class="header">
     <img src="https://i.ibb.co.com/sdV75wcH/Logo.png">
-    <h2>SMK CONTOH INDONESIA</h2>
+    <h2>SMK BINTANG PERSADA DENPASAR</h2>
     <p>Pengumuman Kelulusan Tahun 2026</p>
   </div>
   <div class="content">
@@ -220,6 +237,7 @@ input {
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwigDticvprrUY6eOdf6iOiZ_VqYQ9J1K4n8yfd0QuCyw9vZpkFC8S6wxNfpIHLzNM/exec";
 
+let confettiInterval = null;
 let semuaData = [];
 
 // ⏰ COUNTDOWN
@@ -292,13 +310,14 @@ document.getElementById("nama").addEventListener("keyup", function() {
   if (!sudahDibuka) {
     return;
   }
-  if (semuaData.length === 0) {
+  const box = document.getElementById("suggestions");
+
+    if (semuaData.length === 0) {
     box.innerHTML = "<div>Memuat data...</div>";
     return;
-   }
+    }
 
   const value = this.value.toLowerCase();
-  const box = document.getElementById("suggestions");
 
   if (value.length < 2) {
     box.innerHTML = "";
@@ -338,47 +357,99 @@ function pilihNama(nama) {
 // 🎨 HASIL + FIREWORKS
 function tampilkan(d) {
   const el = document.getElementById("result");
-
-  // 🛡️ pengaman jika elemen tidak ada
   if (!el) return;
 
-  let kelas = d.status === "LULUS" ? "lulus" : "tidak";
+  const status = d.status.trim().toUpperCase();
+  if (status === "LULUS") {
+    startFireworks();
+    } else {
+    stopFireworks();
+    }
+  const kelas = status === "LULUS" ? "lulus" : "tidak";
 
-  let animasi = d.status === "LULUS"
-    ? "🎉 Selamat Anda LULUS!"
-    : "Tetap semangat 💪";
+    let animasiLulus = "";
+    let pesan = `<div class="animasi">Tetap semangat, terus berkarya dan raihlah cita-citamu setinggi mungkin</div>`;
 
-  el.innerHTML = `
-    <div class="result ${kelas}">
-      <h3>${d.nama}</h3>
-      <p>Status: <b>${d.status}</b></p>
-      <p>${d.keterangan}</p>
-      <div class="animasi">${animasi}</div>
+    // kalau lulus, tambahkan animasi khusus
+    if (status === "LULUS") {
+    animasiLulus = `<div class="lulus-text">🎉 LULUS 🎉</div>`;
+    startFireworks();
+    } else {
+    stopFireworks();
+    }
+
+    el.innerHTML = `
+    <div class="result ${status === "LULUS" ? "lulus" : "tidak"}">
+        <h3>${d.nama}</h3>
+        <p>Anda dinyatakan</b></p>
+        ${animasiLulus}
+        <p>${d.keterangan}</p>
+
+        
+        ${pesan}
+
     </div>
-  `;
+    `;
 
-  // 🎆 FIREWORKS
-  if (d.status === "LULUS") {
+  // 🔍 DEBUG (boleh hapus nanti)
+  console.log("STATUS FINAL:", status);
 
-    const duration = 2 * 1000;
-    const end = Date.now() + duration;
+  // 🎆 CONFETTI (FIX)
+  if (status === "LULUS" && typeof confetti === "function") {
 
-    const interval = setInterval(() => {
+    // delay sedikit biar lebih dramatis
+    setTimeout(() => {
+
+      const duration = 2000;
+      const end = Date.now() + duration;
+
+      const interval = setInterval(() => {
         if (Date.now() > end) {
-        return clearInterval(interval);
+          clearInterval(interval);
+          return;
         }
 
         confetti({
-        particleCount: 50,
-        spread: 100,
-        origin: {
+          particleCount: 80,
+          spread: 120,
+          startVelocity: 45,
+          origin: {
             x: Math.random(),
             y: Math.random() - 0.2
-        }
+          }
         });
 
-    }, 250);
+      }, 250);
+
+    }, 300);
+  }
+}
+
+function startFireworks() {
+  if (confettiInterval) return;
+
+  const endTime = Date.now() + 25000;
+
+  confettiInterval = setInterval(() => {
+    if (Date.now() > endTime) {
+      stopFireworks();
+      return;
     }
+
+    confetti({
+      particleCount: 80,
+      spread: 160,
+      angle: Math.random() * 360
+    });
+
+  }, 300);
+}
+
+function stopFireworks() {
+  if (confettiInterval) {
+    clearInterval(confettiInterval);
+    confettiInterval = null;
+  }
 }
 
 window.addEventListener("load", () => {
@@ -389,6 +460,20 @@ window.addEventListener("load", () => {
       console.log("Data loaded:", semuaData.length);
     });
 });
+</script>
+<script>
+function testConfetti() {
+  if (typeof confetti !== "function") {
+    alert("Confetti gagal load ❌");
+    return;
+  }
+
+  confetti({
+    particleCount: 200,
+    spread: 120,
+    origin: { y: 0.6 }
+  });
+}
 </script>
 
 </body>
