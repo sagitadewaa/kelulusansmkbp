@@ -193,24 +193,26 @@ input {
     <h2>SMK CONTOH INDONESIA</h2>
     <p>Pengumuman Kelulusan Tahun 2026</p>
   </div>
-
   <div class="content">
+
     <div id="countdown" class="countdown-simple">
         ⏳ Dibuka dalam:
         <div id="timeText"></div>
     </div>
-  </div>
-  <div class="progress-container">
-  <div id="progressBar"></div>
-</div>
+
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
 
     <div id="searchSection" style="display:none;">
         <div class="suggestions">
-            <input type="text" id="nama" placeholder="Masukkan Nama Anda..." autocomplete="off">
-            <br>
-            <div id="suggestions" class="suggestions-list"></div>
+        <input type="text" id="nama" placeholder="Masukkan Nama Anda..." autocomplete="off">
+        <div id="suggestions" class="suggestions-list"></div>
         </div>
     </div>
+
+    <!-- ✅ WAJIB ADA -->
+    <div id="result"></div>
   </div>
 
 </div>
@@ -335,13 +337,18 @@ function pilihNama(nama) {
 
 // 🎨 HASIL + FIREWORKS
 function tampilkan(d) {
+  const el = document.getElementById("result");
+
+  // 🛡️ pengaman jika elemen tidak ada
+  if (!el) return;
+
   let kelas = d.status === "LULUS" ? "lulus" : "tidak";
 
   let animasi = d.status === "LULUS"
     ? "🎉 Selamat Anda LULUS!"
     : "Tetap semangat 💪";
 
-  document.getElementById("result").innerHTML = `
+  el.innerHTML = `
     <div class="result ${kelas}">
       <h3>${d.nama}</h3>
       <p>Status: <b>${d.status}</b></p>
@@ -350,15 +357,30 @@ function tampilkan(d) {
     </div>
   `;
 
-  // 🎆 FIREWORKS JIKA LULUS
+  // 🎆 FIREWORKS
   if (d.status === "LULUS") {
-    confetti({
-      particleCount: 150,
-      spread: 100,
-      origin: { y: 0.6 }
-    });
-  }
+
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+
+    const interval = setInterval(() => {
+        if (Date.now() > end) {
+        return clearInterval(interval);
+        }
+
+        confetti({
+        particleCount: 50,
+        spread: 100,
+        origin: {
+            x: Math.random(),
+            y: Math.random() - 0.2
+        }
+        });
+
+    }, 250);
+    }
 }
+
 window.addEventListener("load", () => {
   fetch(API_URL + "?mode=all")
     .then(res => res.json())
