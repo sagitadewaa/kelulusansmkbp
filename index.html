@@ -5,27 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pengumuman Kelulusan</title>
 
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #4facfe, #00f2fe);
   margin: 0;
   padding: 20px;
-  color: #333;
 }
 
 .container {
   max-width: 500px;
   margin: auto;
-  background: #fff;
+  background: white;
   padding: 25px;
   border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   text-align: center;
-}
-
-h2 {
-  margin-bottom: 10px;
 }
 
 input {
@@ -33,7 +30,23 @@ input {
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  margin-top: 15px;
+}
+
+.suggestions {
+  text-align: left;
+  border: 1px solid #ccc;
+  border-top: none;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.suggestions div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.suggestions div:hover {
+  background: #f1f1f1;
 }
 
 .result {
@@ -42,44 +55,12 @@ input {
   border-radius: 10px;
 }
 
-.lulus {
-  background: #d4edda;
-  color: #155724;
-}
-
-.tidak {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-#countdown {
-  font-weight: bold;
-  margin: 15px 0;
-}
-
-.stats {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-  font-size: 14px;
-}
-
-.stat-box {
-  background: #f1f1f1;
-  padding: 10px;
-  border-radius: 10px;
-  width: 30%;
-}
+.lulus { background: #d4edda; }
+.tidak { background: #f8d7da; }
 
 .animasi {
-  font-size: 22px;
-  margin-top: 15px;
-  animation: pop 0.6s ease;
-}
-
-@keyframes pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  font-size: 20px;
+  margin-top: 10px;
 }
 </style>
 </head>
@@ -88,101 +69,112 @@ input {
 
 <div class="container">
   <h2>🎓 Pengumuman Kelulusan</h2>
-  <p>Senin, 19.00 WITA</p>
-
   <div id="countdown"></div>
 
-  <div id="searchBox" style="display:none;">
-    <input type="text" id="nama" placeholder="Ketik nama Anda...">
-  </div>
+  <input type="text" id="nama" placeholder="Ketik nama Anda..." autocomplete="off">
+  <div id="suggestions" class="suggestions"></div>
 
   <div id="result"></div>
-
-  <!-- Statistik -->
-  <div class="stats" id="stats">
-    <div class="stat-box">Total: -</div>
-    <div class="stat-box">Lulus: -</div>
-    <div class="stat-box">Tidak: -</div>
-  </div>
-
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwigDticvprrUY6eOdf6iOiZ_VqYQ9J1K4n8yfd0QuCyw9vZpkFC8S6wxNfpIHLzNM/exec";
 
-// ⏰ SET TANGGAL
+let semuaData = [];
+
+// ⏰ COUNTDOWN
 const target = new Date("2026-05-01T19:00:00+08:00").getTime();
-
-const countdownEl = document.getElementById("countdown");
-const searchBox = document.getElementById("searchBox");
-const input = document.getElementById("nama");
-
-// COUNTDOWN
 setInterval(() => {
   const now = new Date().getTime();
   const selisih = target - now;
 
   if (selisih <= 0) {
-    countdownEl.innerHTML = "🔓 Pengumuman dibuka";
-    searchBox.style.display = "block";
-    loadStat();
+    document.getElementById("countdown").innerHTML = "🔓 Dibuka";
+    loadData();
     return;
   }
 
-  const jam = Math.floor(selisih / (1000 * 60 * 60));
-  const menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
-  const detik = Math.floor((selisih % (1000 * 60)) / 1000);
+  const jam = Math.floor(selisih / 3600000);
+  const menit = Math.floor((selisih % 3600000) / 60000);
+  const detik = Math.floor((selisih % 60000) / 1000);
 
-  countdownEl.innerHTML = `⏳ ${jam} Jam : ${menit} Menit : ${detik}d`;
+  document.getElementById("countdown").innerHTML =
+    `⏳ ${jam}j ${menit}m ${detik}d`;
 }, 1000);
 
-// 🔍 AUTO SEARCH
-input.addEventListener("keyup", function() {
-  const nama = input.value;
-  if (nama.length < 2) return;
+// 🔄 LOAD DATA SEKALI
+function loadData() {
+  if (semuaData.length > 0) return;
 
-  fetch(API_URL + "?nama=" + nama)
+  Swal.fire({
+    title: 'Memuat data...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  fetch(API_URL + "?mode=all")
     .then(res => res.json())
-    .then(data => tampilkan(data));
-});
+    .then(data => {
+      semuaData = data;
+      Swal.close();
+    });
+}
 
-// 🎨 TAMPILKAN HASIL
-function tampilkan(data) {
-  const el = document.getElementById("result");
+// 🔍 AUTOCOMPLETE
+document.getElementById("nama").addEventListener("keyup", function() {
+  const value = this.value.toLowerCase();
+  const box = document.getElementById("suggestions");
 
-  if (data.length === 0) {
-    el.innerHTML = "<p>Data tidak ditemukan</p>";
+  if (value.length < 2) {
+    box.innerHTML = "";
     return;
   }
 
-  let d = data[0];
+  const hasil = semuaData.filter(d =>
+    d.nama.toLowerCase().includes(value)
+  );
 
+  let html = "";
+  hasil.slice(0, 10).forEach(d => {
+    html += `<div onclick="pilihNama('${d.nama}')">${d.nama}</div>`;
+  });
+
+  box.innerHTML = html;
+});
+
+// 🎯 PILIH NAMA
+function pilihNama(nama) {
+  document.getElementById("nama").value = nama;
+  document.getElementById("suggestions").innerHTML = "";
+
+  Swal.fire({
+    title: 'Mencari...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  setTimeout(() => {
+    const data = semuaData.find(d => d.nama === nama);
+    tampilkan(data);
+    Swal.close();
+  }, 500);
+}
+
+// 🎨 HASIL
+function tampilkan(d) {
   let kelas = d.status === "LULUS" ? "lulus" : "tidak";
   let animasi = d.status === "LULUS"
-    ? `<div class="animasi">🎉 Selamat Anda LULUS!</div>`
-    : `<div class="animasi">Tetap semangat 💪</div>`;
+    ? "🎉 Selamat Anda LULUS!"
+    : "Tetap semangat 💪";
 
-  el.innerHTML = `
+  document.getElementById("result").innerHTML = `
     <div class="result ${kelas}">
       <h3>${d.nama}</h3>
       <p>Status: <b>${d.status}</b></p>
       <p>${d.keterangan}</p>
-      ${animasi}
+      <div class="animasi">${animasi}</div>
     </div>
   `;
-}
-
-// 📊 LOAD STATISTIK
-function loadStat() {
-  fetch(API_URL + "?mode=stat")
-    .then(res => res.json())
-    .then(d => {
-      document.getElementById("stats").innerHTML = `
-        <div class="stat-box">Total<br><b>${d.total}</b></div>
-        <div class="stat-box">Lulus<br><b>${d.lulus}</b></div>
-        <div class="stat-box">Tidak<br><b>${d.tidak}</b></div>
-      `;
-    });
 }
 </script>
 
