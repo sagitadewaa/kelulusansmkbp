@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Pengumuman Kelulusan</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #f4f6f8;
+  padding: 40px;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+input {
+  padding: 10px;
+  width: 80%;
+  margin-top: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+#result {
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h2>Pengumuman Kelulusan</h2>
+  <p>Senin, 19.00 WITA</p>
+
+  <!-- COUNTDOWN -->
+  <div id="countdown"></div>
+
+  <!-- SEARCH -->
+  <div id="searchBox" style="display:none;">
+    <input type="text" id="nama" placeholder="Masukkan Nama Anda">
+    <br>
+    <button onclick="cari()">Cari</button>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result"></div>
+
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwigDticvprrUY6eOdf6iOiZ_VqYQ9J1K4n8yfd0QuCyw9vZpkFC8S6wxNfpIHLzNM/exec";
+
+// SET WAKTU PENGUMUMAN
+const target = new Date("2026-05-01T19:00:00+08:00").getTime();
+
+const countdownEl = document.getElementById("countdown");
+const searchBox = document.getElementById("searchBox");
+
+// COUNTDOWN
+setInterval(() => {
+  const now = new Date().getTime();
+  const selisih = target - now;
+
+  if (selisih <= 0) {
+    countdownEl.innerHTML = "<b>Pengumuman sudah dibuka</b>";
+    searchBox.style.display = "block";
+    return;
+  }
+
+  const jam = Math.floor(selisih / (1000 * 60 * 60));
+  const menit = Math.floor((selisih % (1000 * 60 * 60)) / (1000 * 60));
+  const detik = Math.floor((selisih % (1000 * 60)) / 1000);
+
+  countdownEl.innerHTML = 
+    `Dibuka dalam ${jam}j ${menit}m ${detik}d`;
+}, 1000);
+
+// SEARCH FUNCTION
+function cari() {
+  const nama = document.getElementById("nama").value;
+
+  fetch(API_URL + "?nama=" + nama)
+    .then(res => res.json())
+    .then(data => {
+      let html = "";
+
+      if (data.length === 0) {
+        html = "Data tidak ditemukan";
+      } else {
+        data.forEach(d => {
+          html += `
+            <p><b>${d.nama}</b></p>
+            <p>Status: <b>${d.status}</b></p>
+            <p>${d.keterangan}</p>
+          `;
+        });
+      }
+
+      document.getElementById("result").innerHTML = html;
+    });
+}
+</script>
+
+</body>
+</html>
