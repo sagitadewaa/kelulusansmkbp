@@ -7,7 +7,8 @@
 
 <!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<!-- Animate CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <!-- Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -196,6 +197,64 @@ input {
 @keyframes glow {
   from { text-shadow: 0 0 5px #28a745; }
   to { text-shadow: 0 0 20px #28a745; }
+}
+
+.swal2-popup.custom-popup {
+  border-radius: 18px !important;
+  padding: 20px !important;
+  background: linear-gradient(135deg, #ffffff, #f0f6ff) !important;
+  box-shadow: 0 15px 40px rgba(0, 51, 102, 0.25) !important;
+  border: 1px solid rgba(0, 89, 179, 0.15);
+}
+
+/* logo */
+.popup-logo {
+  width: 75px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+}
+
+/* judul */
+.popup-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 10px;
+}
+
+/* isi */
+.popup-content {
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #333;
+}
+
+/* footer */
+.popup-footer {
+  margin-top: 15px;
+  font-weight: bold;
+  text-align: center;
+  color: #003366;
+  padding-top: 10px;
+  border-top: 1px dashed #ccc;
+}
+
+/* list */
+.popup-content ol {
+  padding-left: 18px;
+}
+
+.popup-content li {
+  margin-bottom: 6px;
+}
+
+/* tombol */
+.swal2-confirm {
+  border-radius: 10px !important;
+  font-weight: bold;
+  padding: 10px 20px;
+  box-shadow: 0 5px 15px rgba(0, 89, 179, 0.3);
 }
 </style>
 </head>
@@ -474,6 +533,59 @@ function testConfetti() {
     origin: { y: 0.6 }
   });
 }
+
+// Himbauan Kelulusan
+window.addEventListener("load", () => {
+
+  if (!localStorage.getItem("popup_kelulusan_2026")) {
+
+    Swal.fire({
+      customClass: {
+        popup: 'custom-popup'
+      },
+
+      // 🔥 ANIMASI MASUK & KELUAR
+      showClass: {
+        popup: 'animate__animated animate__zoomIn'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__fadeOut'
+      },
+
+      html: `
+        <div style="text-align:center;">
+          <img src="https://i.ibb.co.com/sdV75wcH/Logo.png" class="popup-logo">
+          <div class="popup-title">Himbauan Kelulusan</div>
+        </div>
+
+        <div class="popup-content">
+          <ol>
+            <li>Pantau kelulusan dari rumah</li>
+            <li>Tidak ada konvoi kendaraan</li>
+            <li>Tidak ada corat-coret</li>
+            <li>Simpan seragam atau berikan pada yang membutuhkan</li>
+            <li>Kelulusan ini bukanlah akhir dari segalanya, namun ini adalah awal dari perjalanan kalian untuk kejenjang yang lebih tinggi lagi.</li>
+            <li>Kami harapkan kalian tetap bisa menjaga nama baik sendiri, keluarga dan almamater kalian.</li>
+          </ol>
+        </div>
+
+        <div class="popup-footer">
+          Rayakan Kelulusan dengan kegiatan-kegiatan positif dan tidak merugikan orang lain.
+        </div>
+      `,
+
+      confirmButtonText: "Saya Mengerti",
+      confirmButtonColor: "#003366",
+      allowOutsideClick: false,
+      width: 420
+
+    }).then(() => {
+      localStorage.setItem("popup_kelulusan_2026", "true");
+    });
+
+  }
+
+});
 </script>
 
 </body>
